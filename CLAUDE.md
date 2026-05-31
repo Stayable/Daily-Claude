@@ -48,10 +48,12 @@
 
 ## Session Management
 - On every session start: read `chats/_index.md` and collect all rows where Status = `active`
+  - If `_index.md` is missing or unreadable → proceed as a normal conversation, no prompt
   - **No active chats** → proceed as a normal conversation, no prompt
-  - **One active chat** → output one line: `Continue "[chat title]" or start fresh? (↵ to continue, f for fresh)`
+  - **One active chat** → output one line: `Continue "[chat title]" or start fresh? (c to continue, f for fresh)`
     - `f` → plain conversation, no context loaded, no logging
-    - anything else → read `## SUMMARY` from that chat file, show task brief (format below)
+    - `c` → read `## SUMMARY` from that chat file, show task brief (format below)
+    - anything else → ask: "Type c to continue the last session or f for a fresh chat."
   - **Multiple active chats** → output a numbered picker:
     ```
     Active sessions:
@@ -62,8 +64,10 @@
     Which?
     ```
     - `f` → plain conversation, no context loaded, no logging
-    - number → read `## SUMMARY` from that chat file, show task brief (format below)
-- **Task brief format** (no preamble — output only this):
+    - valid number → read `## SUMMARY` from that chat file, show task brief (format below)
+    - anything else → ask: "Type a number to resume a session or f for a fresh chat."
+- **Task brief format:**
+  - No preamble — output only the block below, then wait for reply before doing anything else
   ```
   **Resuming:** [chat title]
 
@@ -77,12 +81,12 @@
 
   Which would you like to tackle? (1, 2, 3, or something else)
   ```
-  - **Done** sources: `### Accomplished` bullets + `[x]` items from `### Open Items`
+  - **Done** sources: `### Accomplished` bullets + `[x]` (lowercase x) items from `### Open Items`
   - **Pending** sources: `[ ]` items from `### Open Items`, numbered in order
-- `session.md` — retained as last-used pointer written by `/save`; not read on session start
+- `session.md` — written by `/save` as a last-used pointer only; ignore it on session start
 - Use `/save` to snapshot progress and auto-commit to git
 - Chat files live in `chats/<topic>/<slug>_YYYYMMDD.md`
-- `chats/_index.md` is the master list — Status column (`active`) drives session start
+- `chats/_index.md` is the master list of all chats
 
 ## Daily Conversation Purpose
 This repo is the home base for my daily working sessions with Claude. Each session may cover:
