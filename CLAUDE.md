@@ -124,6 +124,7 @@ Read the SUMMARY section of the chat file above before your first response.
   - **Next** source: the `### Next Steps` line (omit if absent)
 - `session.md` — the active-chat pointer; you write it on resume/new, `/save` reads it to find the chat file
 - Use `/save` to snapshot progress and auto-commit to git
+- Mid-session: `/menu` re-shows the picker in this window (resume/switch; context carries over). `/new-session` opens a fresh Claude in a new window — a clean run of `start-claude.bat` (same repo, clean context).
 - Chat files live in `chats/<topic>/<slug>_YYYYMMDD.md`
 - `chats/_index.md` is the master list of all chats
 
