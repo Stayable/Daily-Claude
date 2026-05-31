@@ -46,6 +46,13 @@
 - Outgoing letters on RISE8 letterhead → read `rise8-letter` skill first
 - Document signing → read `sign-document` skill first
 
+## Session Management
+- On every session start: read `session.md`, then read the `## SUMMARY` section of the chat file it points to — that is your full context
+- Do not ask for re-briefing; the summary has everything needed to continue cold
+- Use `/save` to snapshot progress and auto-commit to git
+- Chat files live in `chats/<topic>/<slug>_YYYYMMDD.md`
+- `chats/_index.md` is the master list of all chats
+
 ## Daily Conversation Purpose
 This repo is the home base for my daily working sessions with Claude. Each session may cover:
 - Property operations and performance reviews
@@ -54,5 +61,3 @@ This repo is the home base for my daily working sessions with Claude. Each sessi
 - Financial modeling and analysis
 - Task management and prioritization
 - Procurement and vendor decisions
-
-Start each session ready to pick up where we left off. Ask what's on the agenda if I don't lead with it.
