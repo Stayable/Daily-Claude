@@ -2,19 +2,31 @@
 *2026-05-31*
 
 ## Problem
-On session start, Claude silently absorbs the SUMMARY context and waits. Jefferson has to re-orient himself and direct Claude manually. The resume experience is passive, and there is no way to skip into a plain conversation without session tracking.
+On session start, Claude silently absorbs the SUMMARY context and waits. Jefferson has to re-orient himself and direct Claude manually. There is no way to skip into a plain conversation, and the flow doesn't account for multiple active chats.
 
 ## Goal
-On every session start with an active chat, Claude presents a one-line mode selector, then either resumes with a task brief or drops into a clean unlogged conversation — matching Jefferson's directive, low-friction working style.
+On every session start, Claude reads active chats from `_index.md` and presents the right entry point — a picker if multiple sessions exist, a single-chat mode selector if only one, or nothing if there's nothing active. Always gives the option to start fresh with no logging.
 
 ## Scope
 Single change: `CLAUDE.md` `## Session Management` section. No new files, no infrastructure.
 
 ## Behavior
 
-**Trigger:** Every session start where `session.md` contains an active `Chat:` path.
+**Trigger:** Every session start.
 
-### Step 1 — Mode selector (always first)
+### Step 1 — Read active chats
+
+Read `chats/_index.md`. Collect all rows where status = `active`.
+
+---
+
+### Path A — No active chats
+
+Proceed as a normal conversation. No prompt, no session context.
+
+---
+
+### Path B — One active chat
 
 Output one line:
 
@@ -22,14 +34,33 @@ Output one line:
 Continue "[chat title]" or start fresh? (↵ to continue, f for fresh)
 ```
 
-Wait for response.
+- **f** → fresh chat (see Step 3b)
+- **↵ / anything else** → load that chat and show task brief (see Step 2)
 
-### Step 2a — Continue (default)
+---
 
-If the user presses Enter or types anything other than `f`:
+### Path C — Multiple active chats
 
-1. Read `## SUMMARY` from the active chat file
-2. Output task brief — no preamble:
+Output a numbered picker:
+
+```
+Active sessions:
+1. [chat title 1]
+2. [chat title 2]
+f. Fresh chat
+
+Which?
+```
+
+- **f** → fresh chat (see Step 3b)
+- **number** → load that chat and show task brief (see Step 2)
+
+---
+
+### Step 2 — Task brief (after a chat is selected)
+
+1. Read `## SUMMARY` from the selected chat file
+2. Output:
 
 ```
 **Resuming:** [chat title]
@@ -46,18 +77,24 @@ If the user presses Enter or types anything other than `f`:
 Which would you like to tackle? (1, 2, 3, or something else)
 ```
 
-### Step 2b — Fresh chat (`f`)
-
-If the user types `f` (or `fresh`):
-
-- Do not read the chat file
-- Do not load session context
-- No session tracking for this conversation — `/save` will not be offered or used
-- Output nothing — just proceed as a normal conversation
-
-**Sources for task brief:**
+**Sources:**
 - **Done** = `### Accomplished` bullets + any `[x]` items from `### Open Items`
 - **Pending** = `[ ]` items from `### Open Items`, numbered in order
+
+---
+
+### Step 3b — Fresh chat
+
+- Do not load any chat file
+- Do not load session context
+- No session tracking for this conversation — `/save` will not be offered or used
+- Output nothing — proceed as a normal conversation
+
+---
+
+## Role of session.md
+
+`session.md` is retained as a "last used" pointer (written by `/save`). It is no longer the driver of session start — `_index.md` is. `session.md` may be used in the future for quick-resume without reading the full index.
 
 ## What Changes in CLAUDE.md
 
@@ -66,13 +103,15 @@ If the user types `f` (or `fresh`):
 > Do not ask for re-briefing; the summary has everything needed to continue cold
 
 **Replace with:**
-> On every session start where `session.md` has an active `Chat:` path:
-> 1. Output: `Continue "[chat title]" or start fresh? (↵ to continue, f for fresh)`
-> 2. If `f` → proceed as a plain conversation, no session context loaded, no logging
-> 3. Otherwise → read `## SUMMARY` from the chat file, then output the task brief (Resuming header, Done section, Pending numbered list) and ask: "Which would you like to tackle?"
+> On every session start: read `chats/_index.md` and collect all active chats.
+> - No active chats → proceed normally
+> - One active chat → output `Continue "[title]" or start fresh? (↵ / f)`
+> - Multiple active chats → output numbered picker + `f. Fresh chat`
+> After a chat is selected, read its `## SUMMARY` and output the task brief (Resuming header, Done section, Pending numbered list), then ask: "Which would you like to tackle?"
+> If `f` → no context loaded, no logging, proceed as plain conversation.
 
 ## What Does NOT Change
 - `/save` command format — SUMMARY structure stays identical
 - Chat file format — no changes to frontmatter or sections
-- `session.md` format — no changes
-- Fresh-chat conversations have no access to prior session context (by design)
+- `session.md` format — still written by `/save` as last-used pointer
+- `_index.md` format — status column already exists; `active` is the trigger
