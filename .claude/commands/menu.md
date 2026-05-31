@@ -4,7 +4,7 @@ description: Re-show the chat picker mid-session (resume another chat, or start 
 
 Re-display the session picker right now, then act on the reply exactly as on session start.
 
-1. If the current logged chat has unsaved progress, first say one line: `Run /save first if you don't want to lose this session's progress — or reply anyway.` (Skip this for a `quick`/unlogged session.)
+1. **Auto-save first.** If this is a logged chat with new progress since the last save, run the `/save` procedure now (the steps in `.claude/commands/save.md`: rewrite the SUMMARY, update frontmatter + `_index.md`, commit, push). Lead with one line: `Saving before switching…` then proceed once it's committed. Skip the save only for a `quick`/unlogged session or when nothing has changed since the last save.
 2. Read `chats/_index.md` and reverse the rows so they're most-recent-first.
 3. Output the picker, then STOP and wait — no other tools first:
    ```
