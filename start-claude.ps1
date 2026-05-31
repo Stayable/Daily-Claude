@@ -2,9 +2,35 @@ $ErrorActionPreference = 'SilentlyContinue'
 $Root     = $PSScriptRoot
 $ChatDir  = "$Root\chats"
 $Session  = "$Root\session.md"
+$IndexMd  = "$Root\chats\_index.md"
 $Topics   = @('operations','investor-comms','legal','financial','procurement')
 
 Set-Location $Root
+
+# Set one chat active in _index.md, close all others
+function Set-ActiveChat {
+    param([string]$RelPath)
+    if (-not (Test-Path $IndexMd)) { return }
+    $lines = Get-Content $IndexMd -Encoding UTF8
+    $updated = $lines | ForEach-Object {
+        $line = $_ -replace '\|\s*active\s*\|(\s*)$', '| closed |$1'
+        if ($line -match [regex]::Escape($RelPath)) {
+            $line = $line -replace '\|\s*closed\s*\|(\s*)$', '| active |$1'
+        }
+        $line
+    }
+    Set-Content $IndexMd -Value $updated -Encoding UTF8
+}
+
+# Close all chats in _index.md (used before adding a new active one)
+function Close-AllChats {
+    if (-not (Test-Path $IndexMd)) { return }
+    $lines = Get-Content $IndexMd -Encoding UTF8
+    $updated = $lines | ForEach-Object {
+        $_ -replace '\|\s*active\s*\|(\s*)$', '| closed |$1'
+    }
+    Set-Content $IndexMd -Value $updated -Encoding UTF8
+}
 
 # Sync remote
 Write-Host ""
@@ -105,11 +131,12 @@ Start the conversation.
 "@
     Set-Content -Path $chatFile -Value $template -Encoding UTF8
 
-    # Append to _index.md
+    # Close all existing chats, then append new active one
+    Close-AllChats
+    $relPath   = "chats/$topic/$fname"
     $indexLine = "| [$purpose](chats/$topic/$fname) | $topic | $today | active |"
-    Add-Content -Path (Join-Path $ChatDir "_index.md") -Value $indexLine -Encoding UTF8
+    Add-Content -Path $IndexMd -Value $indexLine -Encoding UTF8
 
-    $relPath = "chats/$topic/$fname"
     Write-Host ""
     Write-Host "  Created: $relPath" -ForegroundColor Green
 
@@ -121,6 +148,10 @@ Start the conversation.
         exit 1
     }
     $relPath = $selected.FullPath.Replace("$Root\", '').Replace('\', '/')
+
+    # Mark selected chat active, close all others
+    Set-ActiveChat -RelPath $relPath
+
     Write-Host ""
     Write-Host ("  Resuming: {0}" -f $selected.File) -ForegroundColor Green
 } else {
