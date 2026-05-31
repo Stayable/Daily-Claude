@@ -47,11 +47,42 @@
 - Document signing → read `sign-document` skill first
 
 ## Session Management
-- On every session start: read `session.md`, then read the `## SUMMARY` section of the chat file it points to — that is your full context
-- Do not ask for re-briefing; the summary has everything needed to continue cold
+- On every session start: read `chats/_index.md` and collect all rows where Status = `active`
+  - **No active chats** → proceed as a normal conversation, no prompt
+  - **One active chat** → output one line: `Continue "[chat title]" or start fresh? (↵ to continue, f for fresh)`
+    - `f` → plain conversation, no context loaded, no logging
+    - anything else → read `## SUMMARY` from that chat file, show task brief (format below)
+  - **Multiple active chats** → output a numbered picker:
+    ```
+    Active sessions:
+    1. [chat title 1]
+    2. [chat title 2]
+    f. Fresh chat
+
+    Which?
+    ```
+    - `f` → plain conversation, no context loaded, no logging
+    - number → read `## SUMMARY` from that chat file, show task brief (format below)
+- **Task brief format** (no preamble — output only this):
+  ```
+  **Resuming:** [chat title]
+
+  **Done**
+  - [Accomplished bullets]
+  - [any [x] checked Open Items]
+
+  **Pending**
+  1. [unchecked [ ] Open Item 1]
+  2. [unchecked [ ] Open Item 2]
+
+  Which would you like to tackle? (1, 2, 3, or something else)
+  ```
+  - **Done** sources: `### Accomplished` bullets + `[x]` items from `### Open Items`
+  - **Pending** sources: `[ ]` items from `### Open Items`, numbered in order
+- `session.md` — retained as last-used pointer written by `/save`; not read on session start
 - Use `/save` to snapshot progress and auto-commit to git
 - Chat files live in `chats/<topic>/<slug>_YYYYMMDD.md`
-- `chats/_index.md` is the master list of all chats
+- `chats/_index.md` is the master list — Status column (`active`) drives session start
 
 ## Daily Conversation Purpose
 This repo is the home base for my daily working sessions with Claude. Each session may cover:
