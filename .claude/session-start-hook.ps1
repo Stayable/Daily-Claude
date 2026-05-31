@@ -52,7 +52,9 @@ if ($chats.Count -gt $pageSize) {
     $whichOpts = "number to resume, 'more' for older chats, 'new', or 'quick'"
 }
 
-$ctx = "SESSION START - REQUIRED ACTION: Your very first output must be exactly this picker, then STOP and wait for the user's reply before doing anything else. Do not run any tools first.`n`n$header$list`nnew.   Start a new chat (logged)`nquick. Just chat - nothing logged$moreLine`n`nWhich? ($whichOpts)`n`nWhen they reply, follow the Session Management rules in CLAUDE.md: a number resumes that chat (path is in chats/_index.md, most-recent-first, same order shown), 'new' starts the new-chat flow, 'quick' is a casual conversation with no logging - touch no files, 'more' shows the next 10 (continue numbering, e.g. 11-20)."
+$guide = "Commands anytime:  /save  snapshot & commit  |  /menu  switch chats  |  /new-session  fresh window"
+
+$ctx = "SESSION START - REQUIRED ACTION: Your very first output must be exactly this picker (including the Commands line), then STOP and wait for the user's reply before doing anything else. Do not run any tools first.`n`n$header$list`nnew.   Start a new chat (logged)`nquick. Just chat - nothing logged$moreLine`n`nWhich? ($whichOpts)`n`n$guide`n`nWhen they reply, follow the Session Management rules in CLAUDE.md: a number resumes that chat (path is in chats/_index.md, most-recent-first, same order shown), 'new' starts the new-chat flow, 'quick' is a casual conversation with no logging - touch no files, 'more' shows the next 10 (continue numbering, e.g. 11-20)."
 
 $out = @{
     hookSpecificOutput = @{

@@ -47,7 +47,8 @@
 - Document signing → read `sign-document` skill first
 
 ## Session Management
-The launcher (`start-claude.bat`) opens Claude Code directly. A SessionStart hook reads `chats/_index.md` and hands you a picker: up to 10 recent chats (most-recent-first) plus `new`, `quick`, and — when there are more than 10 — `more`. **Your first output is that picker, verbatim — then stop and wait for the reply. Run no tools first.**
+The launcher (`start-claude.bat`) opens Claude Code directly. A SessionStart hook reads `chats/_index.md` and hands you a picker: up to 10 recent chats (most-recent-first) plus `new`, `quick`, and — when there are more than 10 — `more`. **Your first output is that picker, verbatim — then stop and wait for the reply. Run no tools first.** End the picker with this command guide line:
+`Commands anytime:  /save  snapshot & commit  |  /menu  switch chats  |  /new-session  fresh window`
 
 ### When the user replies
 - **A number** → resume that chat:
